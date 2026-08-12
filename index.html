@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Digital Seguro - Acessibilidade e Segurança</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col transition-colors duration-300 texto-tamanho-normal relative" id="corpoAplicativo">
+
+    <!-- ESTRUTURA DO MODAL DE EMERGÊNCIA (SOS) - A PRIMEIRA COISA QUE APARECE NO APP -->
+    <div id="modalEmergencia" class="fixed inset-0 bg-slate-900/85 backdrop-blur-md z-50 flex items-start sm:items-center justify-center p-4 pt-6 sm:pt-4 transition-opacity duration-300 overflow-y-auto" role="dialog" aria-labelledby="tituloModalEmergencia" aria-modal="true">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-6 shadow-2xl border-4 border-red-600 text-slate-900 modal-conteudo relative my-auto">
+            
+            <!-- Cabeçalho em Destaque no Modal -->
+            <div class="flex justify-between items-center border-b-2 border-red-200 pb-4">
+                <div class="flex items-center gap-3 text-red-600 font-bold text-2xl">
+                    <div class="p-3 bg-red-100 rounded-2xl flex items-center justify-center">
+                        <i data-lucide="shield-alert" class="w-8 h-8 text-red-600"></i>
+                    </div>
+                    <div>
+                        <span id="tituloModalEmergencia" class="block leading-tight">Ajuda de Emergência</span>
+                        <span class="text-xs text-slate-500 font-normal">Sempre disponível no início</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="falarTexto('Janela de Ajuda Rápida de Emergência. Escolha uma das opções simples: Ligar para a sua família, copiar pedido de ajuda para o WhatsApp, ou ligar para a Polícia 190.')" class="btn-audio px-3 py-2 rounded-xl flex items-center gap-1 shadow" title="Ouvir opções de emergência em voz alta">
+                        <i data-lucide="volume-2" class="w-6 h-6"></i>
+                        <span class="text-sm">Ouvir</span>
+                    </button>
+                    <button onclick="fecharModalEmergencia()" class="text-slate-500 hover:text-slate-900 p-2 rounded-full hover:bg-slate-200" title="Fechar janela de emergência e ir para o aplicativo">
+                        <i data-lucide="x" class="w-8 h-8"></i>
+                    </button>
+                </div>
+            </div>
+
+            <p class="text-lg text-slate-800 leading-relaxed font-semibold">
+                Precisa de ajuda com alguma mensagem suspeita ou ligação? Escolha uma opção rápida:
+            </p>
+
+            <!-- Opções Amigáveis do Modal de Emergência -->
+            <div class="space-y-4">
+                
+                <!-- Opção 1: Familiar de Confiança -->
+                <div class="p-4 bg-emerald-50 rounded-2xl border-2 border-emerald-300 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <p class="font-bold text-emerald-950 text-lg flex items-center gap-2">
+                            <i data-lucide="user-check" class="w-6 h-6 text-emerald-700"></i>
+                            <span>1. Contato da Sua Família</span>
+                        </p>
+                        <button onclick="falarTexto('Opção 1. Ligar para o seu contato de confiança familiar gravado no celular.')" class="btn-audio px-2.5 py-1 rounded-lg text-xs flex items-center gap-1" title="Ouvir instrução">
+                            <i data-lucide="volume-2" class="w-4 h-4"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+
+                    <div id="containerContactoSalvo" class="hidden space-y-2">
+                        <p class="text-sm text-emerald-800">Contato gravado no seu celular:</p>
+                        <p class="font-bold text-xl text-emerald-950" id="nomeContactoSalvo">Filho / Familiar</p>
+                        <a id="linkLigarFamiliar" href="#" class="w-full p-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg rounded-xl flex items-center justify-center gap-3 block shadow transition">
+                            <i data-lucide="phone-call" class="w-6 h-6"></i>
+                            <span>Ligar Agora para Familiar</span>
+                        </a>
+                        <button onclick="editarContactoFamiliar()" class="text-xs text-emerald-700 underline font-semibold block text-center pt-1">Alterar número gravado</button>
+                    </div>
+
+                    <div id="containerConfigContacto" class="space-y-2">
+                        <p class="text-sm text-emerald-900 font-medium">Guarde aqui o número do seu filho, filha ou parente para ligar com 1 toque:</p>
+                        <input type="text" id="inputNomeFamiliar" placeholder="Nome (Ex: Meu Filho João)" class="w-full p-3 border-2 border-emerald-300 rounded-xl font-medium text-base text-slate-800 bg-white" />
+                        <input type="tel" id="inputNumeroFamiliar" placeholder="Número com DDD (Ex: 11999998888)" class="w-full p-3 border-2 border-emerald-300 rounded-xl font-medium text-base text-slate-800 bg-white" />
+                        <button onclick="guardarContactoFamiliar()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-base shadow transition">
+                            Gravar Contato da Família
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Opção 2: Copiar Mensagem Rápida para o WhatsApp -->
+                <div class="p-4 bg-blue-50 rounded-2xl border-2 border-blue-300 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2.5 bg-blue-200 text-blue-900 rounded-xl flex-shrink-0">
+                                <i data-lucide="copy" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-lg text-blue-950">2. Pedido de Socorro (WhatsApp)</p>
+                                <p class="text-sm text-blue-900">Mensagem pronta para colar para seu parente:</p>
+                            </div>
+                        </div>
+                        <button onclick="falarTexto('Opção 2. Copiar mensagem pronta para colar no WhatsApp de um familiar. A frase é: Olá! Recebi uma mensagem no meu celular e estou na dúvida se é verdade ou golpe. Pode me ajudar a verificar?')" class="btn-audio px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 flex-shrink-0">
+                            <i data-lucide="volume-2" class="w-4 h-4"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+
+                    <!-- Caixa Visual da Mensagem que será copiada -->
+                    <div class="p-3 bg-white border-2 border-blue-200 rounded-xl italic font-sans text-slate-800 text-base leading-relaxed shadow-inner caixa-mensagem-socorro">
+                        "Olá! Recebi uma mensagem no meu celular e estou na dúvida se é verdade ou golpe. Pode me ajudar a verificar?"
+                    </div>
+
+                    <button onclick="copiarMensagemAjuda()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl shadow transition flex items-center justify-center gap-2">
+                        <i data-lucide="copy-check" class="w-5 h-5"></i>
+                        <span>Copiar Esta Mensagem</span>
+                    </button>
+                </div>
+
+                <!-- Opção 3: Ligar para Polícia -->
+                <a href="tel:190" class="w-full p-4 bg-red-50 hover:bg-red-100 text-red-950 rounded-2xl flex items-center gap-4 text-left border-2 border-red-300 block transition">
+                    <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-red-200 text-red-900 rounded-xl flex-shrink-0">
+                                <i data-lucide="phone" class="w-7 h-7"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-lg">3. Ligar para a Polícia (190)</p>
+                                <p class="text-sm text-red-900">Ligue em caso de emergência ou se sofreu um golpe.</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Opção 4: Disque 100 -->
+                <a href="tel:100" class="w-full p-4 bg-amber-50 hover:bg-amber-100 text-amber-950 rounded-2xl flex items-center gap-4 text-left border-2 border-amber-300 block transition">
+                    <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-amber-200 text-amber-900 rounded-xl flex-shrink-0">
+                                <i data-lucide="shield" class="w-7 h-7"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-lg">4. Disque 100 (Apoio ao Idoso)</p>
+                                <p class="text-sm text-amber-900">Ligação gratuita para direitos da pessoa idosa.</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Feedback de Ação -->
+            <div id="retornoAjuda" class="hidden p-3 bg-green-100 text-green-900 rounded-xl font-bold text-center border border-green-400"></div>
+
+            <!-- Botão para Continuar para o Guia -->
+            <button onclick="fecharModalEmergencia()" class="w-full py-4 bg-blue-700 hover:bg-blue-800 font-bold text-xl rounded-2xl text-white shadow-lg transition flex items-center justify-center gap-2">
+                <span>Ir para as Dicas e Treinos do App</span>
+                <i data-lucide="arrow-right" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Barra Superior Amigável -->
+    <header class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <!-- Título com Ícone -->
+            <div class="flex items-center space-x-3 text-center md:text-left">
+                <i data-lucide="shield-check" class="w-10 h-10 text-yellow-400 flex-shrink-0"></i>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl font-bold tracking-wide">Guia Digital Seguro</h1>
+                        <button onclick="falarTexto('Guia Digital Seguro. Aprenda a usar a internet sem medo.')" class="btn-audio p-1.5 rounded-full shadow" title="Ouvir título">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p class="text-sm text-blue-200">Aprenda a usar a internet sem medo</p>
+                </div>
+            </div>
+
+            <!-- Controles Amigáveis e Explícitos -->
+            <div class="flex flex-wrap items-center justify-center gap-2 bg-blue-950/80 p-2 rounded-2xl border border-blue-700 w-full md:w-auto">
+                
+                <!-- Controle de Tamanho de Letra -->
+                <div class="flex items-center gap-1 bg-blue-900 p-1 rounded-xl">
+                    <button onclick="alterarTamanhoFonte('diminuir')" class="flex items-center gap-1 px-3 py-2 bg-blue-800 hover:bg-blue-700 rounded-lg font-bold text-sm text-white" title="Diminuir o tamanho das letras">
+                        <i data-lucide="minus-circle" class="w-5 h-5"></i>
+                        <span>Letra Menor</span>
+                    </button>
+
+                    <button onclick="alterarTamanhoFonte('aumentar')" class="flex items-center gap-1 px-3 py-2 bg-blue-800 hover:bg-blue-700 rounded-lg font-bold text-sm text-white" title="Aumentar o tamanho das letras">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                        <span>Letra Maior</span>
+                    </button>
+                </div>
+
+                <!-- Modo Leitura Confortável (Escuro) -->
+                <button onclick="alternarModoNoturno()" id="botaoModoNoturno" class="flex items-center gap-2 px-3 py-2 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold rounded-xl text-sm transition" title="Alternar visual para cores claras ou escuras">
+                    <i data-lucide="moon" class="w-5 h-5" id="iconeModo"></i>
+                    <span id="textoModo">Modo Escuro</span>
+                </button>
+
+                <!-- Botão de Parar Leitura por Voz -->
+                <button id="botaoPararVoz" onclick="pararVoz()" class="hidden px-3 py-2 bg-red-600 text-white font-bold rounded-xl hover:bg-red-500 items-center gap-1 text-sm shadow" title="Parar a voz de leitura">
+                    <i data-lucide="volume-x" class="w-5 h-5"></i>
+                    <span>Parar Voz</span>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6 space-y-8" id="conteudoPrincipal">
+
+        <!-- Banner de Boas-Vindas e Ajuda Rápida -->
+        <section class="cartao bg-white p-6 rounded-2xl shadow-md border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6 transition">
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-2xl font-bold text-blue-900">Bem-vindo(a)!</h2>
+                    <button onclick="falarTexto('Bem-vindo ao Guia Digital Seguro. Aqui você aprende a usar o celular com tranquilidade e sem medo de golpes.')" class="btn-audio px-3 py-1 rounded-full text-sm flex items-center gap-1 shadow" title="Ouvir mensagem de boas-vindas em voz alta">
+                        <i data-lucide="volume-2" class="w-5 h-5"></i>
+                        <span>Ouvir</span>
+                    </button>
+                </div>
+                <p class="text-slate-700 leading-relaxed">
+                    Aprenda a se proteger no celular com dicas simples, treinamentos práticos e um teste rápido.
+                </p>
+            </div>
+            <!-- Único Botão Principal de Emergência -->
+            <button onclick="abrirModalEmergencia()" class="w-full md:w-auto px-6 py-4 bg-red-600 hover:bg-red-700 text-white text-lg font-bold rounded-2xl shadow-lg flex items-center justify-center gap-3 transition transform active:scale-95 flex-shrink-0">
+                <i data-lucide="phone-call" class="w-8 h-8"></i>
+                <span>Preciso de Ajuda Agora</span>
+            </button>
+        </section>
+
+        <!-- Navegação por Abas Amigáveis -->
+        <nav class="flex border-b-2 border-slate-300 gap-2 overflow-x-auto pb-1" aria-label="Navegação principal">
+            <button onclick="trocarAba('dicas')" id="aba-dicas" class="botao-aba px-6 py-3 font-bold rounded-t-xl bg-blue-700 text-white flex items-center gap-2 shadow">
+                <i data-lucide="book-open" class="w-6 h-6"></i>
+                <span>Dicas Simples</span>
+                <span onclick="event.stopPropagation(); falarTexto('Aba Dicas Simples. Clique para ver as dicas de segurança.')" class="btn-audio px-2 py-0.5 rounded-md text-xs flex items-center gap-0.5" title="Ouvir título da aba">
+                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                </span>
+            </button>
+            <button onclick="trocarAba('simulador')" id="aba-simulador" class="botao-aba px-6 py-3 font-bold rounded-t-xl bg-slate-200 text-slate-700 hover:bg-slate-300 flex items-center gap-2">
+                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                <span>Treino Prático</span>
+                <span onclick="event.stopPropagation(); falarTexto('Aba Treino Prático. Clique para exercitar o reconhecimento de golpes.')" class="btn-audio px-2 py-0.5 rounded-md text-xs flex items-center gap-0.5" title="Ouvir título da aba">
+                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                </span>
+            </button>
+            <button onclick="trocarAba('quiz')" id="aba-quiz" class="botao-aba px-6 py-3 font-bold rounded-t-xl bg-slate-200 text-slate-700 hover:bg-slate-300 flex items-center gap-2">
+                <i data-lucide="help-circle" class="w-6 h-6"></i>
+                <span>Teste de Pergunta</span>
+                <span onclick="event.stopPropagation(); falarTexto('Aba Teste de Pergunta. Clique para responder perguntas sobre segurança.')" class="btn-audio px-2 py-0.5 rounded-md text-xs flex items-center gap-0.5" title="Ouvir título da aba">
+                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                </span>
+            </button>
+        </nav>
+
+        <!-- SEÇÃO 1: DICAS DE SEGURANÇA -->
+        <section id="secao-dicas" class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="shield" class="text-blue-600"></i>
+                        Dicas Principais para o Dia a Dia
+                    </h3>
+                    <button onclick="falarTexto('Dicas Principais para o Dia a Dia. Toque nos botões de áudio em amarelo em cada dica para ouvir a explicação.')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow" title="Ouvir título da seção">
+                        <i data-lucide="volume-2" class="w-5 h-5"></i>
+                        <span>Ouvir</span>
+                    </button>
+                </div>
+                <span class="text-sm font-semibold text-slate-500 hidden sm:inline">Toque no botão amarelo para ouvir</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Dica 1: WhatsApp -->
+                <article class="cartao bg-white p-6 rounded-2xl shadow-md border-l-8 border-green-500 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-3 bg-green-100 text-green-700 rounded-xl">
+                            <i data-lucide="message-square" class="w-8 h-8"></i>
+                        </div>
+                        <button onclick="falarTexto('Dica 1: Pedidos de Dinheiro no WhatsApp. Se algum parente ou amigo mandar mensagem com número novo pedindo dinheiro urgente, desconfie! O que fazer: Ligue para a pessoa no número normal que você já tinha gravado antes de enviar qualquer valor.')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow" title="Ouvir dica em voz alta">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-2">1. Pedidos de Dinheiro no WhatsApp</h4>
+                    <p class="text-slate-700 leading-relaxed">
+                        Se algum parente ou amigo mandar mensagem com <strong>número novo pedindo dinheiro urgente</strong>, desconfie!
+                    </p>
+                    <div class="mt-4 p-3 bg-green-50 rounded-xl border border-green-200 text-green-900 font-medium text-sm caixa-dica">
+                        💡 <strong>O que fazer:</strong> Ligue para a pessoa no número normal que você já tinha gravado antes de enviar qualquer valor.
+                    </div>
+                </article>
+
+                <!-- Dica 2: Ligações de Banco -->
+                <article class="cartao bg-white p-6 rounded-2xl shadow-md border-l-8 border-blue-500 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-3 bg-blue-100 text-blue-700 rounded-xl">
+                            <i data-lucide="phone-off" class="w-8 h-8"></i>
+                        </div>
+                        <button onclick="falarTexto('Dica 2: Falsa Ligação do Banco. Pessoas mal-intencionadas fingem ser do seu banco e dizem que sua conta foi invadida. O que fazer: Desligue o telefone! O banco nunca pede senhas por telefone.')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow" title="Ouvir dica em voz alta">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-2">2. Falsa Ligação do Banco</h4>
+                    <p class="text-slate-700 leading-relaxed">
+                        Pessoas mal-intencionadas fingem ser do seu banco e dizem que sua conta foi invadida.
+                    </p>
+                    <div class="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-200 text-blue-900 font-medium text-sm caixa-dica">
+                        💡 <strong>O que fazer:</strong> Desligue o telefone! O banco <strong>nunca pede senhas</strong> por telefone.
+                    </div>
+                </article>
+
+                <!-- Dica 3: Senhas e Códigos -->
+                <article class="cartao bg-white p-6 rounded-2xl shadow-md border-l-8 border-purple-500 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-3 bg-purple-100 text-purple-700 rounded-xl">
+                            <i data-lucide="key-round" class="w-8 h-8"></i>
+                        </div>
+                        <button onclick="falarTexto('Dica 3: Códigos por Mensagem SMS. Quando chega um código numérico no celular, ele é pessoal e secreto. O que fazer: Nunca leia ou envie esses códigos para desconhecidos.')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow" title="Ouvir dica em voz alta">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-2">3. Códigos por Mensagem (SMS)</h4>
+                    <p class="text-slate-700 leading-relaxed">
+                        Quando chega um código numérico no celular, ele é <strong>pessoal e secreto</strong>.
+                    </p>
+                    <div class="mt-4 p-3 bg-purple-50 rounded-xl border border-purple-200 text-purple-900 font-medium text-sm caixa-dica">
+                        💡 <strong>O que fazer:</strong> Nunca leia ou envie esses códigos para desconhecidos.
+                    </div>
+                </article>
+
+                <!-- Dica 4: Compras Online e Pix -->
+                <article class="cartao bg-white p-6 rounded-2xl shadow-md border-l-8 border-amber-500 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-3 bg-amber-100 text-amber-700 rounded-xl">
+                            <i data-lucide="shopping-cart" class="w-8 h-8"></i>
+                        </div>
+                        <button onclick="falarTexto('Dica 4: Promoções e Compras. Anúncios com preços milagrosos na internet geralmente são lojas falsas. O que fazer: Compre apenas em lojas conhecidas e confira o nome de quem vai receber o Pix.')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow" title="Ouvir dica em voz alta">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-2">4. Promoções e Compras</h4>
+                    <p class="text-slate-700 leading-relaxed">
+                        Anúncios com preços "milagrosos" na internet geralmente são lojas falsas.
+                    </p>
+                    <div class="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 font-medium text-sm caixa-dica">
+                        💡 <strong>O que fazer:</strong> Compre apenas em lojas conhecidas e confira o nome de quem vai receber o Pix.
+                    </div>
+                </article>
+
+                <!-- Dica 5: Redes Sociais e Sorteios Falsos -->
+                <article class="cartao bg-white p-6 rounded-2xl shadow-md border-l-8 border-rose-500 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-3 bg-rose-100 text-rose-700 rounded-xl">
+                            <i data-lucide="gift" class="w-8 h-8"></i>
+                        </div>
+                        <button onclick="falarTexto('Dica 5: Sorteios e Prêmios Falsos. Mensagens no Facebook, Instagram ou WhatsApp dizendo que você ganhou presentes ou prêmios em dinheiro. O que fazer: Ignore! Ninguém entrega prêmios sem você ter se cadastrado em um concurso oficial.')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow" title="Ouvir dica em voz alta">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-2">5. Sorteios e Prêmios Falsos</h4>
+                    <p class="text-slate-700 leading-relaxed">
+                        Mensagens no Facebook, Instagram ou WhatsApp dizendo que você ganhou presentes ou prêmios em dinheiro.
+                    </p>
+                    <div class="mt-4 p-3 bg-rose-50 rounded-xl border border-rose-200 text-rose-900 font-medium text-sm caixa-dica">
+                        💡 <strong>O que fazer:</strong> Ignore! Ninguém entrega prêmios sem você ter se cadastrado em um concurso oficial.
+                    </div>
+                </article>
+
+                <!-- Dica 6: Cuidado com Wi-Fi Público -->
+                <article class="cartao bg-white p-6 rounded-2xl shadow-md border-l-8 border-teal-500 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-3 bg-teal-100 text-teal-700 rounded-xl">
+                            <i data-lucide="wifi" class="w-8 h-8"></i>
+                        </div>
+                        <button onclick="falarTexto('Dica 6: Redes de Wi-Fi Sem Senha. Redes de internet abertas em praças, restaurantes e shoppings podem ser monitoradas por pessoas mal-intencionadas. O que fazer: Use apenas o 4G ou 5G do seu celular quando precisar abrir aplicativos de banco fora de casa.')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow" title="Ouvir dica em voz alta">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-2">6. Redes de Wi-Fi Sem Senha</h4>
+                    <p class="text-slate-700 leading-relaxed">
+                        Redes de internet abertas em praças, restaurantes e shoppings podem ser monitoradas por pessoas mal-intencionadas.
+                    </p>
+                    <div class="mt-4 p-3 bg-teal-50 rounded-xl border border-teal-200 text-teal-900 font-medium text-sm caixa-dica">
+                        💡 <strong>O que fazer:</strong> Use apenas o 4G/5G do seu celular quando precisar abrir aplicativos de banco fora de casa.
+                    </div>
+                </article>
+
+                <!-- Dica 7: Golpe do Falso 0800 -->
+                <article class="cartao bg-white p-6 rounded-2xl shadow-md border-l-8 border-indigo-500 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-3 bg-indigo-100 text-indigo-700 rounded-xl">
+                            <i data-lucide="phone-call" class="w-8 h-8"></i>
+                        </div>
+                        <button onclick="falarTexto('Dica 7: Mensagens com Números 0800. Golpistas enviam mensagens dizendo que houve uma compra grande e mandam você ligar para um número 0800. O que fazer: Nunca ligue para o 0800 da mensagem. Ligue apenas para o número no verso do seu cartão bancário.')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow" title="Ouvir dica em voz alta">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-2">7. Mensagens com Números 0800</h4>
+                    <p class="text-slate-700 leading-relaxed">
+                        Golpistas enviam mensagens dizendo que houve uma compra grande e mandam você ligar para um número "0800".
+                    </p>
+                    <div class="mt-4 p-3 bg-indigo-50 rounded-xl border border-indigo-200 text-indigo-900 font-medium text-sm caixa-dica">
+                        💡 <strong>O que fazer:</strong> Nunca ligue para o 0800 da mensagem. Ligue apenas para o número no verso do seu cartão bancário.
+                    </div>
+                </article>
+
+                <!-- Dica 8: Proteção do Aparelho (Digital e Senhas) -->
+                <article class="cartao bg-white p-6 rounded-2xl shadow-md border-l-8 border-cyan-500 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-3 bg-cyan-100 text-cyan-700 rounded-xl">
+                            <i data-lucide="fingerprint" class="w-8 h-8"></i>
+                        </div>
+                        <button onclick="falarTexto('Dica 8: Mantenha o Celular Trancado. Se o seu celular não tiver senha para abrir a tela, qualquer pessoa que pegar o aparelho poderá ver suas conversas e fotos. O que fazer: Peça ajuda de um familiar para cadastrar sua Impressão Digital ou Reconhecimento Facial.')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow" title="Ouvir dica em voz alta">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-2">8. Mantenha o Celular Trancado</h4>
+                    <p class="text-slate-700 leading-relaxed">
+                        Se o seu celular não tiver senha para abrir a tela, qualquer pessoa que pegar o aparelho poderá ver suas conversas e fotos.
+                    </p>
+                    <div class="mt-4 p-3 bg-cyan-50 rounded-xl border border-cyan-200 text-cyan-900 font-medium text-sm caixa-dica">
+                        💡 <strong>O que fazer:</strong> Peça ajuda de um familiar para cadastrar sua Impressão Digital ou Reconhecimento Facial para desbloquear a tela.
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- SEÇÃO 2: SIMULADOR DE GOLPES (TREINAMENTO PRÁTICO) -->
+        <section id="secao-simulador" class="space-y-6 hidden">
+            <div class="cartao bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl text-amber-900 flex items-start gap-3 justify-between">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="info" class="w-6 h-6 flex-shrink-0 mt-1"></i>
+                    <div>
+                        <h4 class="font-bold text-lg">Treino Prático de Mensagens</h4>
+                        <p class="text-base">Veja o exemplo de mensagem na tela do celular e tente acertar se é uma mensagem Segura ou um Golpe!</p>
+                    </div>
+                </div>
+                <button onclick="falarTexto('Treino Prático de Mensagens. Veja o exemplo de mensagem na tela do celular e tente acertar se é uma mensagem Segura ou um Golpe!')" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow flex-shrink-0" title="Ouvir instruções do treino">
+                    <i data-lucide="volume-2" class="w-5 h-5"></i>
+                    <span>Ouvir</span>
+                </button>
+            </div>
+
+            <!-- Card do Simulador -->
+            <div class="cartao bg-white p-6 rounded-2xl shadow-lg border border-slate-200 max-w-2xl mx-auto space-y-6">
+                <div class="flex justify-between items-center border-b pb-4">
+                    <span id="contador-simulacao" class="text-sm font-bold text-blue-700 uppercase tracking-wide">Exemplo 1 de 6</span>
+                    <button onclick="falarTexto('Remetente: ' + document.getElementById('texto-remetente').innerText + '. Mensagem: ' + document.getElementById('texto-mensagem').innerText)" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow">
+                        <i data-lucide="volume-2" class="w-5 h-5"></i>
+                        <span>Ouvir Mensagem</span>
+                    </button>
+                </div>
+
+                <!-- Simulação de Mensagem do Celular -->
+                <div class="bg-slate-100 p-4 rounded-2xl border-2 border-slate-300 space-y-3 cartao-simulacao">
+                    <div class="flex items-center gap-3 border-b border-slate-300 pb-2">
+                        <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold" id="avatar-simulacao">
+                            MSG
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800" id="texto-remetente">Número Desconhecido</p>
+                            <p class="text-xs text-slate-500" id="tempo-simulacao">Mensagem recebida agora</p>
+                        </div>
+                    </div>
+                    <p class="text-lg text-slate-800 bg-white p-4 rounded-xl shadow-sm font-sans leading-relaxed" id="texto-mensagem">
+                        Carregando exemplo...
+                    </p>
+                </div>
+
+                <!-- Pergunta com Leitura em Voz Alta -->
+                <div class="flex items-center justify-center gap-2">
+                    <p class="font-bold text-xl text-slate-900 text-center">Esta mensagem é SEGURA ou é um GOLPE?</p>
+                    <button onclick="falarTexto('Esta mensagem é SEGURA ou é um GOLPE? Escolha um dos botões abaixo.')" class="btn-audio p-2 rounded-full shadow flex-shrink-0" title="Ouvir pergunta">
+                        <i data-lucide="volume-2" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Botões de Resposta -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button onclick="verificarSimulacao(false)" class="btn-secundario py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-bold text-xl rounded-xl shadow flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                        <span>É Segura</span>
+                    </button>
+                    <button onclick="verificarSimulacao(true)" class="py-4 px-6 bg-red-600 hover:bg-red-700 text-white font-bold text-xl rounded-xl shadow flex items-center justify-center gap-2">
+                        <i data-lucide="x-circle" class="w-6 h-6"></i>
+                        <span>É Golpe!</span>
+                    </button>
+                </div>
+
+                <!-- Feedback -->
+                <div id="retorno-simulacao" class="hidden p-4 rounded-xl text-lg font-medium text-center border-2"></div>
+
+                <!-- Próxima Simulação -->
+                <div class="text-center pt-2">
+                    <button onclick="proximaSimulacao()" class="text-blue-700 font-bold hover:underline text-lg flex items-center justify-center gap-1 mx-auto">
+                        <span>Ver Próximo Exemplo</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 3: QUIZ DE CONHECIMENTO -->
+        <section id="secao-quiz" class="space-y-6 hidden">
+            <div class="cartao bg-white p-6 rounded-2xl shadow-lg border border-slate-200 max-w-2xl mx-auto space-y-6">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="text-2xl font-bold text-blue-900">Perguntas de Segurança</h3>
+                    <span id="progresso-quiz" class="font-bold text-slate-500 text-base">Pergunta 1 de 6</span>
+                </div>
+
+                <!-- Texto da Pergunta -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <h4 id="pergunta-quiz" class="text-xl font-bold text-slate-900">Carregando pergunta...</h4>
+                        <button onclick="falarTexto(document.getElementById('pergunta-quiz').innerText)" class="btn-audio px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow flex-shrink-0" title="Ouvir pergunta em voz alta">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            <span>Ouvir</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Opções -->
+                <div id="opcoes-quiz" class="space-y-3">
+                    <!-- Gerado dinamicamente via JS -->
+                </div>
+
+                <!-- Feedback do Quiz -->
+                <div id="retorno-quiz" class="hidden p-4 rounded-xl text-lg font-bold text-center border-2"></div>
+
+                <div class="flex justify-end pt-4">
+                    <button id="botao-proxima-quiz" onclick="proximaPerguntaQuiz()" class="hidden px-6 py-3 bg-blue-700 text-white font-bold text-lg rounded-xl hover:bg-blue-800">
+                        Próxima Pergunta
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="bg-slate-800 text-slate-300 py-6 px-4 mt-12 border-t border-slate-700 text-center">
+        <div class="max-w-4xl mx-auto space-y-2">
+            <div class="flex items-center justify-center gap-2">
+                <p class="font-bold text-lg text-white">Guia Digital Seguro</p>
+                <button onclick="falarTexto('Guia Digital Seguro. Desenvolvido com foco em facilidade, clareza e segurança para a melhor idade.')" class="btn-audio p-1.5 rounded-full text-slate-900 shadow" title="Ouvir rodapé">
+                    <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <p class="text-sm">Desenvolvido com foco em facilidade, clareza e segurança para a melhor idade.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Principal -->
+    <script>
+        // Inicializar ícones Lucide na carga da página
+        lucide.createIcons();
+
+        // Estado de Acessibilidade
+        const classesFonte = ['texto-tamanho-normal', 'texto-tamanho-grande', 'texto-tamanho-gigante'];
+        let indiceFonte = 0; 
+        let estaModoNoturno = false;
+
+        let indiceSimulacaoAtual = 0;
+        let indiceQuizAtual = 0;
+        let pontuacaoQuiz = 0;
+
+        // Base de Dados Ampla do Treino Prático (6 cenários)
+        const simulacoes = [
+            {
+                remetente: "Número Desconhecido (WhatsApp)",
+                avatar: "WA",
+                texto: '"Oi mãe! Mudei de número. O meu outro celular quebrou. Preciso pagar uma conta urgente de R$ 350 hoje. Pode fazer um Pix pra mim?"',
+                ehGolpe: true,
+                explicacao: "É GOLPE! Golpistas usam fotos de parentes para pedir dinheiro com números novos. Sempre ligue no número antigo para confirmar."
+            },
+            {
+                remetente: "Entregador de Encomenda (SMS)",
+                avatar: "COR",
+                texto: '"Sua encomenda está retida nos Correios. Pague a taxa de R$ 18,90 pelo link www.correio-taxa-falsa.com para liberar a entrega."',
+                ehGolpe: true,
+                explicacao: "É GOLPE! Os Correios não enviam links cobrando taxas urgentes por SMS. Nunca clique no link."
+            },
+            {
+                remetente: "Filho João (Contato Salvo)",
+                avatar: "JO",
+                texto: '"Oi pai, tudo bem? Quando puder me liga pra gente combinar o almoço de domingo com os netos!"',
+                ehGolpe: false,
+                explicacao: "É SEGURA! Esta é uma mensagem normal de um contato que você já tem salvo no celular."
+            },
+            {
+                remetente: "Atendimento do Banco (SMS)",
+                texto: '"ALERTA BANCO: Compra aprovada de R$ 2.450 no Cartão de Crédito. Se não reconhece, ligue imediatamente para 0800-000-0000."',
+                avatar: "BCO",
+                ehGolpe: true,
+                explicacao: "É GOLPE! Esse \'0800\' é falso e vai cair em golpistas que vão pedir suas senhas. Ligue apenas no número impresso no seu cartão de plástico."
+            },
+            {
+                remetente: "Pessoa Desconhecida",
+                avatar: "PIX",
+                texto: '"Mossa desculpa! Fiz um Pix de R$ 200 errado pra sua conta sem querer. Pode me devolver nesse Pix que te passei aqui?"',
+                ehGolpe: true,
+                explicacao: "É GOLPE! É o golpe do falso Pix. Verifique antes diretamente no aplicativo do seu banco se o valor realmente entrou ou fale com seu gerente."
+            },
+            {
+                remetente: "Farmácia do Bairro (Contato Salvo)",
+                avatar: "FAR",
+                texto: '"Dona Maria, o seu remédio que estava encomendado chegou! Pode passar aqui para retirar quando quiser. Bom dia!"',
+                ehGolpe: false,
+                explicacao: "É SEGURA! Uma mensagem informativa simples da farmácia onde você já faz compras."
+            }
+        ];
+
+        // Base de Dados Ampla do Quiz (6 Perguntas com exatamente 3 opções cada)
+        const perguntasQuiz = [
+            {
+                pergunta: "O banco liga para você pedindo sua senha de 6 dígitos para cancelar uma compra suspeita. O que você faz?",
+                opcoes: [
+                    { texto: "Entrega a senha para resolver rápido", correta: false },
+                    { texto: "Desliga o telefone imediatamente", correta: true },
+                    { texto: "Pede para falar com o gerente e dá a senha", correta: false }
+                ],
+                explicacao: "Correto! O banco NUNCA liga pedindo sua senha pessoal por telefone."
+            },
+            {
+                pergunta: "Chega uma mensagem dizendo que você ganhou um prêmio de R$ 5.000, mas precisa pagar R$ 50 para receber. O que é isso?",
+                opcoes: [
+                    { texto: "Uma sorte grande que você deu", correta: false },
+                    { texto: "Um golpe de internet", correta: true },
+                    { texto: "Uma promoção oficial de fim de ano", correta: false }
+                ],
+                explicacao: "Exato! Se pedem dinheiro para entregar um prêmio que você não concorreu, é golpe."
+            },
+            {
+                pergunta: "O que é mais seguro fazer ao criar uma senha para o seu celular ou aplicativo?",
+                opcoes: [
+                    { texto: "Usar a sua data de nascimento", correta: false },
+                    { texto: "Usar a sequência 123456 porque é simples", correta: false },
+                    { texto: "Criar uma combinação que só você saiba e não seja óbvia", correta: true }
+                ],
+                explicacao: "Muito bem! Evite datas comemorativas ou sequências numéricas fáceis."
+            },
+            {
+                pergunta: "Chegou um código por SMS no celular com a mensagem: 'Não compartilhe este código com ninguém'. Alguém liga pedindo esse código. O que fazer?",
+                opcoes: [
+                    { texto: "Não passar o código de jeito nenhum", correta: true },
+                    { texto: "Passar o código se a pessoa parecer simpática", correta: false },
+                    { texto: "Passar o código apenas se a pessoa disser que é do suporte", correta: false }
+                ],
+                explicacao: "Perfeito! Esse código dá acesso às suas contas (como o WhatsApp). Nunca o compartilhe."
+            },
+            {
+                pergunta: "Você quer fazer uma compra de um produto em uma loja da internet pela primeira vez. Qual é a atitude mais segura?",
+                opcoes: [
+                    { texto: "Comprar imediatamente no primeiro anúncio que aparecer", correta: false },
+                    { texto: "Pedir ajuda a um familiar para verificar se o site é confiável", correta: true },
+                    { texto: "Pagar no Pix direto na chave de uma pessoa física desconhecida", correta: false }
+                ],
+                explicacao: "Correto! Em lojas novas ou desconhecidas, pedir a ajuda de um parente evita cair em sites falsos."
+            },
+            {
+                pergunta: "Você recebeu uma ligação de alguém dizendo que um parente seu foi sequestrado e pedindo dinheiro rápido. O que você deve fazer primeiro?",
+                opcoes: [
+                    { texto: "Correr até o banco para fazer o Pix imediatamente", correta: false },
+                    { texto: "Manter a calma, desligar e ligar diretamente para o seu parente", correta: true },
+                    { texto: "Passar os números dos seus cartões de crédito para o golpista", correta: false }
+                ],
+                explicacao: "Muito bem! Trata-se do golpe do 'falso sequestro'. Mantenha a calma, desligue a ligação e chame seu parente direto."
+            }
+        ];
+
+        // --- MUDANÇA DE TAMANHO DE LETRA ---
+        function alterarTamanhoFonte(direcao) {
+            const corpo = document.getElementById('corpoAplicativo');
+            corpo.classList.remove(...classesFonte);
+
+            if (direcao === 'aumentar' && indiceFonte < classesFonte.length - 1) {
+                indiceFonte++;
+            } else if (direcao === 'diminuir' && indiceFonte > 0) {
+                indiceFonte--;
+            }
+
+            corpo.classList.add(classesFonte[indiceFonte]);
+        }
+
+        // --- MODO ESCURO REVISADO COM RENOVAÇÃO DE ÍCONES ---
+        function alternarModoNoturno() {
+            estaModoNoturno = !estaModoNoturno;
+            const corpo = document.getElementById('corpoAplicativo');
+            const textoModo = document.getElementById('textoModo');
+            const iconeModo = document.getElementById('iconeModo');
+
+            if (estaModoNoturno) {
+                corpo.classList.add('modo-noturno');
+                textoModo.innerText = "Modo Claro";
+                iconeModo.setAttribute('data-lucide', 'sun');
+            } else {
+                corpo.classList.remove('modo-noturno');
+                textoModo.innerText = "Modo Escuro";
+                iconeModo.setAttribute('data-lucide', 'moon');
+            }
+            
+            // Recarrega os ícones Lucide para manter visibilidade total no tema ativo
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 50);
+        }
+
+        // --- SISTEMA DE FALA POR VOZ (SOMENTE SOB DEMANDA) ---
+        function falarTexto(texto) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+
+                const fala = new SpeechSynthesisUtterance(texto);
+                fala.lang = 'pt-BR';
+                fala.rate = 0.88;
+
+                const botaoParar = document.getElementById('botaoPararVoz');
+                
+                fala.onstart = () => {
+                    botaoParar.classList.remove('hidden');
+                    botaoParar.classList.add('flex');
+                };
+
+                fala.onend = () => {
+                    botaoParar.classList.add('hidden');
+                    botaoParar.classList.remove('flex');
+                };
+
+                fala.onerror = () => {
+                    botaoParar.classList.add('hidden');
+                    botaoParar.classList.remove('flex');
+                };
+
+                window.speechSynthesis.speak(fala);
+            } else {
+                alert('O seu aparelho não suporta a leitura por voz.');
+            }
+        }
+
+        function pararVoz() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const botaoParar = document.getElementById('botaoPararVoz');
+                botaoParar.classList.add('hidden');
+                botaoParar.classList.remove('flex');
+            }
+        }
+
+        // --- TROCA DE ABAS ---
+        function trocarAba(nomeAba) {
+            pararVoz();
+
+            document.getElementById('secao-dicas').classList.add('hidden');
+            document.getElementById('secao-simulador').classList.add('hidden');
+            document.getElementById('secao-quiz').classList.add('hidden');
+
+            const abas = document.querySelectorAll('.botao-aba');
+            abas.forEach(aba => {
+                aba.classList.remove('bg-blue-700', 'text-white', 'shadow');
+                aba.classList.add('bg-slate-200', 'text-slate-700');
+            });
+
+            document.getElementById(`secao-${nomeAba}`).classList.remove('hidden');
+            const abaAtiva = document.getElementById(`aba-${nomeAba}`);
+            abaAtiva.classList.add('bg-blue-700', 'text-white', 'shadow');
+            abaAtiva.classList.remove('bg-slate-200', 'text-slate-700');
+
+            if (nomeAba === 'simulador') carregarSimulacao();
+            if (nomeAba === 'quiz') iniciarQuiz();
+
+            setTimeout(() => { lucide.createIcons(); }, 50);
+        }
+
+        // --- SIMULADOR DE TREINO ---
+        function carregarSimulacao() {
+            const sim = simulacoes[indiceSimulacaoAtual];
+            document.getElementById('contador-simulacao').innerText = `Exemplo ${indiceSimulacaoAtual + 1} de ${simulacoes.length}`;
+            document.getElementById('texto-remetente').innerText = sim.remetente;
+            document.getElementById('avatar-simulacao').innerText = sim.avatar || "MSG";
+            document.getElementById('texto-mensagem').innerText = sim.texto;
+            
+            const retorno = document.getElementById('retorno-simulacao');
+            retorno.classList.add('hidden');
+            retorno.className = "hidden p-4 rounded-xl text-lg font-medium text-center border-2";
+        }
+
+        function verificarSimulacao(usuarioDisseGolpe) {
+            const sim = simulacoes[indiceSimulacaoAtual];
+            const retorno = document.getElementById('retorno-simulacao');
+            retorno.classList.remove('hidden');
+
+            if (usuarioDisseGolpe === sim.ehGolpe) {
+                retorno.className = "p-4 rounded-xl text-lg font-medium text-center border-2 bg-green-100 border-green-500 text-green-900";
+                retorno.innerHTML = `<strong>Parabéns, você acertou! 🎉</strong><br>${sim.explicacao}`;
+                falarTexto("Parabéns, você acertou! " + sim.explicacao);
+            } else {
+                retorno.className = "p-4 rounded-xl text-lg font-medium text-center border-2 bg-red-100 border-red-500 text-red-900";
+                retorno.innerHTML = `<strong>Atenção! Cuidado! ⚠️</strong><br>${sim.explicacao}`;
+                falarTexto("Atenção! " + sim.explicacao);
+            }
+        }
+
+        function proximaSimulacao() {
+            indiceSimulacaoAtual = (indiceSimulacaoAtual + 1) % simulacoes.length;
+            carregarSimulacao();
+        }
+
+        // --- QUIZ DE CONHECIMENTO ---
+        function iniciarQuiz() {
+            indiceQuizAtual = 0;
+            pontuacaoQuiz = 0;
+            carregarPerguntaQuiz();
+        }
+
+        function carregarPerguntaQuiz() {
+            const q = perguntasQuiz[indiceQuizAtual];
+            document.getElementById('progresso-quiz').innerText = `Pergunta ${indiceQuizAtual + 1} de ${perguntasQuiz.length}`;
+            document.getElementById('pergunta-quiz').innerText = q.pergunta;
+
+            const containerOpcoes = document.getElementById('opcoes-quiz');
+            containerOpcoes.innerHTML = '';
+
+            const retorno = document.getElementById('retorno-quiz');
+            retorno.classList.add('hidden');
+            document.getElementById('botao-proxima-quiz').classList.add('hidden');
+
+            // Itera e adiciona todas as opções existentes no objeto
+            q.opcoes.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "botao-opcao-quiz w-full p-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-lg text-left rounded-xl border-2 border-slate-300 transition flex items-center justify-between gap-2 shadow-sm";
+                
+                btn.innerHTML = `
+                    <span class="flex-grow leading-snug">${opt.texto}</span>
+                    <span onclick="event.stopPropagation(); falarTexto('Opção ${idx + 1}: ${opt.texto.replace(/'/g, "\\'")}')" class="btn-audio px-2 py-1 rounded-md text-xs flex items-center gap-1 flex-shrink-0" title="Ouvir esta opção">
+                        <i data-lucide="volume-2" class="w-4 h-4"></i>
+                        <span>Ouvir</span>
+                    </span>
+                    <i data-lucide="chevron-right" class="w-5 h-5 flex-shrink-0 text-slate-400"></i>
+                `;
+                btn.onclick = () => responderQuiz(opt.correta, q.explicacao);
+                containerOpcoes.appendChild(btn);
+            });
+
+            lucide.createIcons();
+        }
+
+        function responderQuiz(ehCorreta, explicacao) {
+            const retorno = document.getElementById('retorno-quiz');
+            retorno.classList.remove('hidden');
+
+            const botoesOpcao = document.querySelectorAll('#opcoes-quiz button');
+            botoesOpcao.forEach(btn => btn.disabled = true);
+
+            if (ehCorreta) {
+                pontuacaoQuiz++;
+                retorno.className = "p-4 rounded-xl text-lg font-bold text-center border-2 bg-green-100 border-green-500 text-green-900";
+                retorno.innerHTML = `<strong>Resposta Correta! ✅</strong><br><span class="font-normal text-base block mt-1">${explicacao}</span>`;
+                falarTexto("Resposta correta! " + explicacao);
+            } else {
+                pontuacaoQuiz;
+                retorno.className = "p-4 rounded-xl text-lg font-bold text-center border-2 bg-red-100 border-red-500 text-red-900";
+                retorno.innerHTML = `<strong>Ops! Resposta incorreta. ❌</strong><br><span class="font-normal text-base block mt-1">${explicacao}</span>`;
+                falarTexto("Resposta incorreta. " + explicacao);
+            }
+
+            document.getElementById('botao-proxima-quiz').classList.remove('hidden');
+        }
+
+        function proximaPerguntaQuiz() {
+            indiceQuizAtual++;
+            if (indiceQuizAtual < perguntasQuiz.length) {
+                carregarPerguntaQuiz();
+            } else {
+                exibirResultadoQuiz();
+            }
+        }
+
+        function exibirResultadoQuiz() {
+            document.getElementById('progresso-quiz').innerText = "Quiz Concluído!";
+            document.getElementById('pergunta-quiz').innerText = "Resultado do seu Teste";
+
+            const containerOpcoes = document.getElementById('opcoes-quiz');
+            containerOpcoes.innerHTML = `
+                <div class="text-center p-6 bg-blue-50 rounded-2xl border-2 border-blue-200 space-y-3 cartao">
+                    <p class="text-2xl font-bold text-blue-900">Você acertou ${pontuacaoQuiz} de ${perguntasQuiz.length} perguntas!</p>
+                    <p class="text-lg text-slate-700">Continue praticando para manter suas navegações na internet sempre seguras.</p>
+                    <button onclick="falarTexto('Você acertou ${pontuacaoQuiz} de ${perguntasQuiz.length} perguntas! Continue praticando para manter suas navegações na internet sempre seguras.')" class="btn-audio mt-2 px-4 py-2 rounded-full font-bold flex items-center justify-center gap-2 mx-auto shadow">
+                        <i data-lucide="volume-2" class="w-5 h-5"></i>
+                        <span>Ouvir Resultado</span>
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('retorno-quiz').classList.add('hidden');
+            const btnProxima = document.getElementById('botao-proxima-quiz');
+            btnProxima.innerText = "Refazer o Teste";
+            btnProxima.onclick = iniciarQuiz;
+            btnProxima.classList.remove('hidden');
+
+            falarTexto(`Você concluiu o teste e acertou ${pontuacaoQuiz} de ${perguntasQuiz.length} perguntas. Parabéns!`);
+        }
+
+        // --- LÓGICA DO MODAL DE EMERGÊNCIA (SOS) ---
+        function abrirModalEmergencia() {
+            document.getElementById('modalEmergencia').classList.remove('hidden');
+            carregarContactoSalvo();
+            lucide.createIcons();
+        }
+
+        function fecharModalEmergencia() {
+            pararVoz();
+            document.getElementById('modalEmergencia').classList.add('hidden');
+            document.getElementById('retornoAjuda').classList.add('hidden');
+        }
+
+        function copiarMensagemAjuda() {
+            const textoAjuda = "Olá! Recebi uma mensagem no meu celular e estou na dúvida se é verdade ou golpe. Pode me ajudar a verificar?";
+            
+            const elementoTemporario = document.createElement("textarea");
+            elementoTemporario.value = textoAjuda;
+            document.body.appendChild(elementoTemporario);
+            elementoTemporario.select();
+            document.execCommand("copy");
+            document.body.removeChild(elementoTemporario);
+
+            const retorno = document.getElementById('retornoAjuda');
+            retorno.innerText = "Mensagem copiada com sucesso! Agora basta abrir o WhatsApp e colar para o seu familiar.";
+            retorno.classList.remove('hidden');
+
+            falarTexto("Mensagem copiada com sucesso. Abra o WhatsApp e cole para o seu familiar.");
+        }
+
+        // --- GESTÃO DO CONTACTO DE CONFIANÇA FAMILIAR ---
+        function carregarContactoSalvo() {
+            const nome = localStorage.getItem('contacto_nome_guia');
+            const numero = localStorage.getItem('contacto_numero_guia');
+
+            const containerSalvo = document.getElementById('containerContactoSalvo');
+            const containerConfig = document.getElementById('containerConfigContacto');
+
+            if (nome && numero) {
+                document.getElementById('nomeContactoSalvo').innerText = `${nome} (${numero})`;
+                document.getElementById('linkLigarFamiliar').setAttribute('href', `tel:${numero}`);
+                containerSalvo.classList.remove('hidden');
+                containerConfig.classList.add('hidden');
+            } else {
+                containerSalvo.classList.add('hidden');
+                containerConfig.classList.remove('hidden');
+            }
+        }
+
+        function guardarContactoFamiliar() {
+            const nome = document.getElementById('inputNomeFamiliar').value.trim();
+            const numero = document.getElementById('inputNumeroFamiliar').value.trim();
+
+            if (!nome || !numero) {
+                alert('Por favor, preencha o nome e o número de celular do familiar.');
+                return;
+            }
+
+            localStorage.setItem('contacto_nome_guia', nome);
+            localStorage.setItem('contacto_numero_guia', numero);
+
+            carregarContactoSalvo();
+            lucide.createIcons();
+            falarTexto(`Contato de ${nome} gravado com sucesso.`);
+        }
+
+        function editarContactoFamiliar() {
+            document.getElementById('containerContactoSalvo').classList.add('hidden');
+            document.getElementById('containerConfigContacto').classList.remove('hidden');
+        }
+
+        // Executar após carregar a página
+        window.onload = function() {
+            carregarContactoSalvo();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
