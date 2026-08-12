@@ -1,8 +1,6 @@
- 
-        // Inicializar ícones Lucide na carga da página
+
         lucide.createIcons();
 
-        // Estado de Acessibilidade
         const classesFonte = ['texto-tamanho-normal', 'texto-tamanho-grande', 'texto-tamanho-gigante'];
         let indiceFonte = 0; 
         let estaModoNoturno = false;
@@ -11,7 +9,9 @@
         let indiceQuizAtual = 0;
         let pontuacaoQuiz = 0;
 
-        // Base de Dados Ampla do Treino Prático (6 cenários)
+        let botaoAudioAtivo = null;
+
+        // Base de Dados do Treino
         const simulacoes = [
             {
                 remetente: "Número Desconhecido (WhatsApp)",
@@ -57,7 +57,7 @@
             }
         ];
 
-        // Base de Dados Ampla do Quiz (6 Perguntas com exatamente 3 opções cada)
+        // Base de Dados do Quiz
         const perguntasQuiz = [
             {
                 pergunta: "O banco liga para você pedindo sua senha de 6 dígitos para cancelar uma compra suspeita. O que você faz?",
@@ -115,7 +115,7 @@
             }
         ];
 
-        // --- MUDANÇA DE TAMANHO DE LETRA ---
+        // MUDANÇA DE TAMANHO DE LETRA
         function alterarTamanhoFonte(direcao) {
             const corpo = document.getElementById('corpoAplicativo');
             corpo.classList.remove(...classesFonte);
@@ -129,7 +129,7 @@
             corpo.classList.add(classesFonte[indiceFonte]);
         }
 
-        // --- MODO ESCURO REVISADO COM RENOVAÇÃO DE ÍCONES ---
+        // MODO ESCURO
         function alternarModoNoturno() {
             estaModoNoturno = !estaModoNoturno;
             const corpo = document.getElementById('corpoAplicativo');
@@ -146,56 +146,88 @@
                 iconeModo.setAttribute('data-lucide', 'moon');
             }
             
-            // Recarrega os ícones Lucide para manter visibilidade total no tema ativo
-            setTimeout(() => {
-                lucide.createIcons();
-            }, 50);
+            setTimeout(() => { lucide.createIcons(); }, 50);
         }
 
-        // --- SISTEMA DE FALA POR VOZ (SOMENTE SOB DEMANDA) ---
-        function falarTexto(texto) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-
-                const fala = new SpeechSynthesisUtterance(texto);
-                fala.lang = 'pt-BR';
-                fala.rate = 0.88;
-
-                const botaoParar = document.getElementById('botaoPararVoz');
-                
-                fala.onstart = () => {
-                    botaoParar.classList.remove('hidden');
-                    botaoParar.classList.add('flex');
-                };
-
-                fala.onend = () => {
-                    botaoParar.classList.add('hidden');
-                    botaoParar.classList.remove('flex');
-                };
-
-                fala.onerror = () => {
-                    botaoParar.classList.add('hidden');
-                    botaoParar.classList.remove('flex');
-                };
-
-                window.speechSynthesis.speak(fala);
-            } else {
+        // SISTEMA DE FALA APENAS SOB DEMANDA (TOGGLE)
+        function toggleFala(texto, elementoBotao) {
+            if (!('speechSynthesis' in window)) {
                 alert('O seu aparelho não suporta a leitura por voz.');
+                return;
             }
+
+            const synth = window.speechSynthesis;
+
+            if (synth.speaking && botaoAudioAtivo === elementoBotao) {
+                pararVozTotal();
+                return;
+            }
+
+            pararVozTotal();
+
+            const fala = new SpeechSynthesisUtterance(texto);
+            fala.lang = 'pt-BR';
+            fala.rate = 0.88;
+
+            mudarEstadoBotaoParaParar(elementoBotao);
+            botaoAudioAtivo = elementoBotao;
+
+            fala.onend = () => {
+                restaurarEstadoBotao(elementoBotao);
+                botaoAudioAtivo = null;
+            };
+
+            fala.onerror = () => {
+                restaurarEstadoBotao(elementoBotao);
+                botaoAudioAtivo = null;
+            };
+
+            synth.speak(fala);
         }
 
-        function pararVoz() {
+        function pararVozTotal() {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const botaoParar = document.getElementById('botaoPararVoz');
-                botaoParar.classList.add('hidden');
-                botaoParar.classList.remove('flex');
+            }
+            if (botaoAudioAtivo) {
+                restaurarEstadoBotao(botaoAudioAtivo);
+                botaoAudioAtivo = null;
             }
         }
 
-        // --- TROCA DE ABAS ---
+        function mudarEstadoBotaoParaParar(btn) {
+            if (!btn) return;
+            btn.classList.remove('btn-audio');
+            btn.classList.add('btn-tocando');
+
+            const textSpan = btn.querySelector('span');
+            if (textSpan) textSpan.innerText = 'Parar';
+
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.setAttribute('data-lucide', 'square');
+                lucide.createIcons();
+            }
+        }
+
+        function restaurarEstadoBotao(btn) {
+            if (!btn) return;
+            btn.classList.remove('btn-tocando');
+            btn.classList.add('btn-audio');
+
+            const textSpan = btn.querySelector('span');
+            if (textSpan) textSpan.innerText = 'Ouvir';
+
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.setAttribute('data-lucide', 'volume-2');
+                lucide.createIcons();
+            }
+        }
+
+        // TROCA DE ABAS
         function trocarAba(nomeAba) {
-            pararVoz();
+            pararVozTotal();
 
             document.getElementById('secao-dicas').classList.add('hidden');
             document.getElementById('secao-simulador').classList.add('hidden');
@@ -218,8 +250,9 @@
             setTimeout(() => { lucide.createIcons(); }, 50);
         }
 
-        // --- SIMULADOR DE TREINO ---
+        // SIMULADOR DE TREINO
         function carregarSimulacao() {
+            pararVozTotal();
             const sim = simulacoes[indiceSimulacaoAtual];
             document.getElementById('contador-simulacao').innerText = `Exemplo ${indiceSimulacaoAtual + 1} de ${simulacoes.length}`;
             document.getElementById('texto-remetente').innerText = sim.remetente;
@@ -232,6 +265,7 @@
         }
 
         function verificarSimulacao(usuarioDisseGolpe) {
+            pararVozTotal();
             const sim = simulacoes[indiceSimulacaoAtual];
             const retorno = document.getElementById('retorno-simulacao');
             retorno.classList.remove('hidden');
@@ -239,20 +273,19 @@
             if (usuarioDisseGolpe === sim.ehGolpe) {
                 retorno.className = "p-4 rounded-xl text-lg font-medium text-center border-2 bg-green-100 border-green-500 text-green-900";
                 retorno.innerHTML = `<strong>Parabéns, você acertou! 🎉</strong><br>${sim.explicacao}`;
-                falarTexto("Parabéns, você acertou! " + sim.explicacao);
             } else {
                 retorno.className = "p-4 rounded-xl text-lg font-medium text-center border-2 bg-red-100 border-red-500 text-red-900";
                 retorno.innerHTML = `<strong>Atenção! Cuidado! ⚠️</strong><br>${sim.explicacao}`;
-                falarTexto("Atenção! " + sim.explicacao);
             }
         }
 
         function proximaSimulacao() {
+            pararVozTotal();
             indiceSimulacaoAtual = (indiceSimulacaoAtual + 1) % simulacoes.length;
             carregarSimulacao();
         }
 
-        // --- QUIZ DE CONHECIMENTO ---
+        // QUIZ DE CONHECIMENTO
         function iniciarQuiz() {
             indiceQuizAtual = 0;
             pontuacaoQuiz = 0;
@@ -260,6 +293,7 @@
         }
 
         function carregarPerguntaQuiz() {
+            pararVozTotal();
             const q = perguntasQuiz[indiceQuizAtual];
             document.getElementById('progresso-quiz').innerText = `Pergunta ${indiceQuizAtual + 1} de ${perguntasQuiz.length}`;
             document.getElementById('pergunta-quiz').innerText = q.pergunta;
@@ -271,17 +305,16 @@
             retorno.classList.add('hidden');
             document.getElementById('botao-proxima-quiz').classList.add('hidden');
 
-            // Itera e adiciona todas as opções existentes no objeto
             q.opcoes.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = "botao-opcao-quiz w-full p-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-lg text-left rounded-xl border-2 border-slate-300 transition flex items-center justify-between gap-2 shadow-sm";
                 
                 btn.innerHTML = `
                     <span class="flex-grow leading-snug">${opt.texto}</span>
-                    <span onclick="event.stopPropagation(); falarTexto('Opção ${idx + 1}: ${opt.texto.replace(/'/g, "\\'")}')" class="btn-audio px-2 py-1 rounded-md text-xs flex items-center gap-1 flex-shrink-0" title="Ouvir esta opção">
+                    <button type="button" onclick="event.stopPropagation(); toggleFala('Opção ${idx + 1}: ${opt.texto.replace(/'/g, "\\'")}', this)" class="btn-audio px-2 py-1 rounded-md text-xs flex items-center gap-1 flex-shrink-0" title="Ouvir esta opção">
                         <i data-lucide="volume-2" class="w-4 h-4"></i>
                         <span>Ouvir</span>
-                    </span>
+                    </button>
                     <i data-lucide="chevron-right" class="w-5 h-5 flex-shrink-0 text-slate-400"></i>
                 `;
                 btn.onclick = () => responderQuiz(opt.correta, q.explicacao);
@@ -292,6 +325,7 @@
         }
 
         function responderQuiz(ehCorreta, explicacao) {
+            pararVozTotal();
             const retorno = document.getElementById('retorno-quiz');
             retorno.classList.remove('hidden');
 
@@ -302,18 +336,16 @@
                 pontuacaoQuiz++;
                 retorno.className = "p-4 rounded-xl text-lg font-bold text-center border-2 bg-green-100 border-green-500 text-green-900";
                 retorno.innerHTML = `<strong>Resposta Correta! ✅</strong><br><span class="font-normal text-base block mt-1">${explicacao}</span>`;
-                falarTexto("Resposta correta! " + explicacao);
             } else {
-                pontuacaoQuiz;
                 retorno.className = "p-4 rounded-xl text-lg font-bold text-center border-2 bg-red-100 border-red-500 text-red-900";
                 retorno.innerHTML = `<strong>Ops! Resposta incorreta. ❌</strong><br><span class="font-normal text-base block mt-1">${explicacao}</span>`;
-                falarTexto("Resposta incorreta. " + explicacao);
             }
 
             document.getElementById('botao-proxima-quiz').classList.remove('hidden');
         }
 
         function proximaPerguntaQuiz() {
+            pararVozTotal();
             indiceQuizAtual++;
             if (indiceQuizAtual < perguntasQuiz.length) {
                 carregarPerguntaQuiz();
@@ -323,6 +355,7 @@
         }
 
         function exibirResultadoQuiz() {
+            pararVozTotal();
             document.getElementById('progresso-quiz').innerText = "Quiz Concluído!";
             document.getElementById('pergunta-quiz').innerText = "Resultado do seu Teste";
 
@@ -331,7 +364,7 @@
                 <div class="text-center p-6 bg-blue-50 rounded-2xl border-2 border-blue-200 space-y-3 cartao">
                     <p class="text-2xl font-bold text-blue-900">Você acertou ${pontuacaoQuiz} de ${perguntasQuiz.length} perguntas!</p>
                     <p class="text-lg text-slate-700">Continue praticando para manter suas navegações na internet sempre seguras.</p>
-                    <button onclick="falarTexto('Você acertou ${pontuacaoQuiz} de ${perguntasQuiz.length} perguntas! Continue praticando para manter suas navegações na internet sempre seguras.')" class="btn-audio mt-2 px-4 py-2 rounded-full font-bold flex items-center justify-center gap-2 mx-auto shadow">
+                    <button onclick="toggleFala('Você acertou ${pontuacaoQuiz} de ${perguntasQuiz.length} perguntas! Continue praticando para manter suas navegações na internet sempre seguras.', this)" class="btn-audio mt-2 px-4 py-2 rounded-full font-bold flex items-center justify-center gap-2 mx-auto shadow">
                         <i data-lucide="volume-2" class="w-5 h-5"></i>
                         <span>Ouvir Resultado</span>
                     </button>
@@ -343,11 +376,9 @@
             btnProxima.innerText = "Refazer o Teste";
             btnProxima.onclick = iniciarQuiz;
             btnProxima.classList.remove('hidden');
-
-            falarTexto(`Você concluiu o teste e acertou ${pontuacaoQuiz} de ${perguntasQuiz.length} perguntas. Parabéns!`);
         }
 
-        // --- LÓGICA DO MODAL DE EMERGÊNCIA (SOS) ---
+        // MODAL DE EMERGÊNCIA (SOS)
         function abrirModalEmergencia() {
             document.getElementById('modalEmergencia').classList.remove('hidden');
             carregarContactoSalvo();
@@ -355,12 +386,13 @@
         }
 
         function fecharModalEmergencia() {
-            pararVoz();
+            pararVozTotal();
             document.getElementById('modalEmergencia').classList.add('hidden');
             document.getElementById('retornoAjuda').classList.add('hidden');
         }
 
         function copiarMensagemAjuda() {
+            pararVozTotal();
             const textoAjuda = "Olá! Recebi uma mensagem no meu celular e estou na dúvida se é verdade ou golpe. Pode me ajudar a verificar?";
             
             const elementoTemporario = document.createElement("textarea");
@@ -373,11 +405,9 @@
             const retorno = document.getElementById('retornoAjuda');
             retorno.innerText = "Mensagem copiada com sucesso! Agora basta abrir o WhatsApp e colar para o seu familiar.";
             retorno.classList.remove('hidden');
-
-            falarTexto("Mensagem copiada com sucesso. Abra o WhatsApp e cole para o seu familiar.");
         }
 
-        // --- GESTÃO DO CONTACTO DE CONFIANÇA FAMILIAR ---
+        // GESTÃO DO CONTACTO DE CONFIANÇA FAMILIAR
         function carregarContactoSalvo() {
             const nome = localStorage.getItem('contacto_nome_guia');
             const numero = localStorage.getItem('contacto_numero_guia');
@@ -397,6 +427,7 @@
         }
 
         function guardarContactoFamiliar() {
+            pararVozTotal();
             const nome = document.getElementById('inputNomeFamiliar').value.trim();
             const numero = document.getElementById('inputNumeroFamiliar').value.trim();
 
@@ -410,7 +441,6 @@
 
             carregarContactoSalvo();
             lucide.createIcons();
-            falarTexto(`Contato de ${nome} gravado com sucesso.`);
         }
 
         function editarContactoFamiliar() {
@@ -418,7 +448,6 @@
             document.getElementById('containerConfigContacto').classList.remove('hidden');
         }
 
-        // Executar após carregar a página
         window.onload = function() {
             carregarContactoSalvo();
             lucide.createIcons();

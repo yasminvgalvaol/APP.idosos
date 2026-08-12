@@ -1,11 +1,12 @@
- /* Ajustes de Tamanho de Fonte Intuitivos */
+
+        /* Ajustes de Tamanho de Fonte Intuitivos */
         .texto-tamanho-normal { font-size: 1.125rem; line-height: 1.75rem; }
         .texto-tamanho-grande { font-size: 1.375rem; line-height: 2.125rem; }
         .texto-tamanho-gigante { font-size: 1.625rem; line-height: 2.375rem; }
 
-        /* Modo Leitura Confortável (Visual escuro ajustado para legibilidade e visibilidade total) */
+        /* Modo Leitura Confortável */
         .modo-noturno {
-            background-color: #0f172a !important; /* Azul escuro suave */
+            background-color: #0f172a !important;
             color: #f8fafc !important;
         }
         .modo-noturno .cartao,
@@ -16,10 +17,10 @@
             color: #f8fafc !important;
         }
         .modo-noturno h1, .modo-noturno h2, .modo-noturno h3, .modo-noturno h4, .modo-noturno h5 {
-            color: #93c5fd !important; /* Azul claro para títulos */
+            color: #93c5fd !important;
         }
         .modo-noturno p, .modo-noturno span, .modo-noturno div, .modo-noturno strong, .modo-noturno label {
-            color: #f1f5f9 !important; /* Texto branco/cinza claro */
+            color: #f1f5f9 !important;
         }
         .modo-noturno .bg-slate-100, 
         .modo-noturno .bg-slate-200, 
@@ -61,7 +62,7 @@
             color: #93c5fd !important;
         }
 
-        /* Ajustes dos Feedbacks de Resposta no Modo Escuro */
+        /* Feedbacks no Modo Escuro */
         .modo-noturno .bg-green-100 {
             background-color: #064e3b !important;
             border-color: #10b981 !important;
@@ -80,7 +81,6 @@
             color: #fef2f2 !important;
         }
 
-        /* Botão de Opções do Quiz em Modo Noturno */
         .modo-noturno .botao-opcao-quiz {
             background-color: #334155 !important;
             color: #ffffff !important;
@@ -98,7 +98,6 @@
             border-color: #3b82f6 !important;
         }
         
-        /* Garante visibilidade e cor de ícones SVG no modo escuro */
         .modo-noturno svg {
             stroke: #93c5fd !important;
         }
@@ -106,18 +105,33 @@
             stroke: currentColor !important;
         }
 
-        /* Botão de Áudio Destacado */
+        /* Botão de Áudio Padrão */
         .btn-audio {
             background-color: #facc15 !important;
             color: #0f172a !important;
             border: 2px solid #eab308 !important;
             font-weight: bold !important;
+            transition: all 0.2s ease-in-out;
         }
         .btn-audio:hover {
             background-color: #eab308 !important;
         }
 
-        /* Foco Visível Reforçado */
+        /* Botão quando está TOCANDO ÁUDIO */
+        .btn-tocando {
+            background-color: #ef4444 !important;
+            color: #ffffff !important;
+            border: 2px solid #dc2626 !important;
+            font-weight: bold !important;
+            animation: pulso 1.5s infinite;
+        }
+
+        @keyframes pulso {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
         button:focus, a:focus, input:focus {
             outline: 4px solid #2563eb !important;
             outline-offset: 3px !important;
